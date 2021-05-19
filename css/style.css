@@ -1,0 +1,18 @@
+
+.board td {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    transition: 0.5s;
+}
+
+.board td:hover {
+    background-color: lightsalmon;
+}
+
+/* .cell {
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  font-size: 1.5em;
+} */
