@@ -8,35 +8,44 @@ const GAMEֹֹֹ_OVER = '🎇';
 
 var gSound = new Audio('http://freesoundeffect.net/sites/default/files/electronic-buzzer-incorrect-sound-effect-36279297.mp3')
 
-// var gdifficulty;
+
+var gDifficulty = gDifficulty
 var gBoard;
-var gTimer= 0
-var gFlagCount = 0
-var gMinesNum;
+var gTimer = 0
+var gInterval;
+var gFlagCount = 2
 var gGame = {
     isOn: false,
     shownCount: 0,
     markedCount: 0,
-    secsPassed:0
+    // secsPassed: 0,
 }
 
-
+// window.oncontextmenu = (e) => {
+//     e.preventDefault();
+// }
 
 function init() {
-    timer()
-    gBoard = createBoard();
-    createMines(gBoard)
+    gGame.isOn = true
+    gBoard = createBoard(gDifficulty);
+    clearInterval(gInterval)
+    gInterval = null
+    var elTimer = document.querySelector('.time');
+    elTimer.innerText = gTimer.toFixed(3)
+    gTimer = 0
     setMinesNegsCount(gBoard)
     renderBoard(gBoard);
+    document.querySelector('h3').innerText = 'Caution from the Mines!'
+
 }
 
 
 
-function createBoard() {
+function createBoard(size) {
     var board = [];
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < size; i++) {
         board[i] = [];
-        for (var j = 0; j < 4; j++) {
+        for (var j = 0; j < size; j++) {
 
             var cell = {
                 minesAroundCount: 0,
@@ -75,21 +84,12 @@ function setMinesNegsCount(board) {
 
 }
 
-function createMine(board) {
-    var mine = {
-        location: {
-            i: getRandomMintLocaition(0, 3),
-            j: getRandomMintLocaition(0, 3)
-        }
-    };
-    board[mine.location.i][mine.location.j].isMine = true
-}
 
 
-function createMines(board) {
-    createMine(board);
-    createMine(board);
-    // להוסיף תנאי שמייצר פצצות ביחס לגודל הלוח
+function createMines(gDifficulty, minesNum) {
+    for (var i = 0; i < minesNum; i++) {
+        gBoard[getRandomMintLocaition(0,gDifficulty-1)][getRandomMintLocaition(0, gDifficulty-1)].isMine = true
+    }
 }
 
 
@@ -103,8 +103,6 @@ function renderBoard(board) {
             if (gBoard[i][j].isShown) cell = board[i][j].minesAroundCount
             if (gBoard[i][j].isMine && gBoard[i][j].isShown) cell = MINE
             strHTML += `<td onmousedown="cellClicked(${i},${j},this,event)" class="cell">${cell}</td>`;
-            // strHTML += `<td onclick="cellClicked(${i},${j},this)" class="cell">${cell}</td>`;
-            // 
         }
         strHTML += '</tr>';
     }
@@ -114,31 +112,32 @@ function renderBoard(board) {
 
 
 
-function cellClicked(i, j, elCell,ev) {
-console.log(ev);
-    if (gBoard[i][j].isMine) {
-        elCell.innerText = GAMEֹֹֹ_OVER
-        gSound.play()
-        gameOver()
+function cellClicked(i, j, elCell, ev) {
+    if (gInterval === null) timer()
+    if (ev.button === 0) {
+        if (gBoard[i][j].isMine) {
+            gameOver()
+            gSound.play()
+            document.querySelector('h3').innerText = 'You lost Game Over!'
+            elCell.innerText = GAMEֹֹֹ_OVER
+        }
+        if (gBoard[i][j].isShown === false) {
+            gBoard[i][j].isShown = true
+            elCell.innerText = gBoard[i][j].minesAroundCount
+            elCell.classList.add('emptyCell')
+            if (gBoard[i][j].minesAroundCount === 0)
+                expandShown(i, j, elCell)
+        }
     }
-    if (gBoard[i][j].minesAroundCount > 0) {
+    if (ev.button === 2) {
+        gBoard[i][j].isMarked = true
         gBoard[i][j].isShown = true
-        elCell.innerText = gBoard[i][j].minesAroundCount
-        // לחסוף את התאים השכנים = 0 עד שמגיעים למספרים
-    }
+        elCell.innerText = FLAG
+        if (gFlagCount--) {
+            document.querySelector('h2').innerText = 'More ' + gFlagCount + 'flag you have '
+        }
 
-    if (gBoard[i][j].minesAroundCount === 0 && !gBoard[i][j].isMine) {
-        gBoard[i][j].isShown = true
-        elCell.classList.add('emptyCell')
-        expandShown(i, j, elCell)
-        // לחסוף את התאים השכנים = 0 עד שמגיעים למספרים
     }
-    // if(מקש ימני){
-    // elCell.innerText = FLAG
-    // gFlagCount++
-    // gBoard[i][j].isMarked= true
-    // gBoard[i][j].isShown = true
-    // }
 
 }
 
@@ -148,69 +147,47 @@ function expandShown(cellI, cellJ, elCell) {
         for (var j = cellJ - 1; j <= cellJ + 1; j++) {
             if (i === cellI && j === cellJ) continue;
             if (j < 0 || j >= gBoard[i].length) continue;
-        
-            if (gBoard[i][j].minesAroundCount === 0 && !gBoard[i][j].isMine) {
-                gBoard[i][j].isShown = true
-                elCell.classList.add('emptyCell')
-                 if (gBoard[i][j].minesAroundCount > 0) {
-                gBoard[i][j].isShown = true
-                elCell.innerText = gBoard[i][j].minesAroundCount
-                continue;
-            }
-            // else{
-            //     expandShown(i, j, elCell)
-            // }
-            }
-            
+
+            gBoard[i][j].isShown = true
+            elCell.innerText = gBoard[i][j].minesAroundCount
+            elCell.classList.add('emptyCell')
         }
     }
 }
 
 
 function timer() {
-    //  setInterval(function () {
+    gInterval = setInterval(function () {
         var elTimer = document.querySelector('.time');
-        gTimer += 0.0
-        // console.log(gTimer.toFixed(3));
+        gTimer += 0.001
         elTimer.innerText = gTimer.toFixed(3)
-    // }, 10)
+    }, 1)
 }
 
 
 function gameOver() {
+    clearInterval(gInterval)
+    gInterval = null
     gGame.isOn = false;
-    document.querySelector('h3').innerText = 'Game Over'
-    // לעצור את הזמן
-
-}
-function restartGame() {
-    gGame.isOn = true;
-    elBtn.innerText = gGame.isOn ? '😁' : '😓';
-    // init()
+    document.querySelector('h3').innerText = 'Game Over!'
+    init()
 }
 
-// function gameOver() {
+function restartGame(elBtn) {
+    if (gGame.isOn) {
+        elBtn.innerText = '😁'
+        clearInterval(gInterval)
+        gInterval = null
+        init()
+    } else {
+        elBtn.innerText = '😓'
+        gGame.isOn = true;
+        init()
+    }
+}
 
-// }
+
 
 function getRandomMintLocaition(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
-// function levelChange(elBtn) {
-//     switch (elBtn.innerText) {
-//         case 'Easy':
-//             elBtn.innerText = 'Medium';
-//             gDifficulty = 25;
-//             break;
-//         case 'Medium':
-//             elBtn.innerText = 'Hard';
-//             gDifficulty = 36;
-//             break;
-//         case 'Hard':
-//             elBtn.innerText = 'Easy';
-//             gDifficulty = 16;
-//             break;
-//     }
-//     init();
-// }

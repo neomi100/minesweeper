@@ -20,3 +20,25 @@
 .emptyCell {
 background-color: aquamarine;
 }
+
+/* 
+function createMine(board) {
+  // board[getRandomMintLocaition(0, 3)][getRandomMintLocaition(0, 3)].isMine = true
+
+
+  var mine = {
+      location: {
+          i: getRandomMintLocaition(0, 3),
+          j: getRandomMintLocaition(0, 3)
+      }
+  };
+  board[mine.location.i][mine.location.j].isMine = true
+}
+
+
+function createMines(board) {
+  for (var i = 0; i < board.length; i++) {
+      createMine(gBoard);
+      console.log(board);   
+       } 
+} */
