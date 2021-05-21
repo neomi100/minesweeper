@@ -11,13 +11,19 @@
 
 <body onload="init()">
     <h1>Mine Sweeper</h1>
-    <button onclick="toggleGame(this)">Start</button>
-    <table border="1" cellpadding="4">
-        <tBody class="board"></tbody>
-            <!-- <td class="td"></td> -->
+    <button class="btn"onclick ="setDifficult(4,2),restartGame()">easy</button>
+    <button class="btn"onclick ="setDifficult(8,12),restartGame()">medium</button>
+    <button class="btn"onclick ="setDifficult(12,30),restartGame()">hard</button>
+    <div class="time">Time:<span></span></div>
+    <button class="smiley" onclick="restartGame(this)">😁</button>
+    <div class="flag"><span></span></div>
+    <h2></h2>
+    <h3></h3>
+    <table class="table"  cellpadding="4">
+        <tBody class="board"></tbody>  
         </tBody>
     </table>
-    <script src="js/util.js"></script>
+    <h5>© Neomi Goldberg</h5>
     <script src="js/main.js"></script>
 </body>
 
