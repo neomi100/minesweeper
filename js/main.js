@@ -12,8 +12,8 @@ var gSound = new Audio('http://freesoundeffect.net/sites/default/files/electroni
 var gBoard;
 var gInterval;
 var gTimer = 0
-var gFlagCount = 2
-// var gMinesNum;
+var gFlagCount;
+
 
 
 var gGame = {
@@ -26,6 +26,7 @@ var gLevel = { size: 4, mines: 2 };
 
 
 function init() {
+    
     gGame.isOn = true
     gBoard = createBoard();
     placeMine(gBoard)
@@ -34,9 +35,10 @@ function init() {
     gInterval = null
     setMinesNegsCount(gBoard)
     renderBoard(gBoard);
-    // gFlagCount = mineNum
-    document.querySelector('h3').innerText = 'Beware of the Mines!'
+    gGame.shownCount = 0
+    gFlagCount = gLevel.mines
     document.querySelector('.flag').innerText = 'You have  ' + gFlagCount + ' flags'
+    document.querySelector('h3').innerText = 'Beware of the Mines!'
 }
 
 
@@ -110,6 +112,11 @@ function renderBoard(board) {
             var cell = ''
             if (gBoard[i][j].isShown) cell = board[i][j].minesAroundCount
             if (gBoard[i][j].isMine && gBoard[i][j].isShown) cell = MINE
+            if (gBoard[i][j].isMarked){
+                cell = FLAG
+            } else{
+                cell= ''
+            }
             // var value = gBoard[i][j].isMine === true ? MINE : gBoard[i][j].minesAroundCount
             // elCell.innerText = value
             strHTML += `<td onmousedown="cellClicked(${i},${j},this,event)" class="cell">${cell}</td>`;
@@ -131,8 +138,9 @@ function cellClicked(i, j, elCell, ev) {
     if (gTimer === 0) timer()
     if (ev.button === 0) {
         if (gBoard[i][j].isMarked || gBoard[i][j].isShown) return
-        elCell.innerText = gBoard[i][j].minesAroundCount
         gBoard[i][j].isShown = true
+        gGame.shownCount++
+        elCell.innerText = gBoard[i][j].minesAroundCount
         if (gBoard[i][j].isMine) {
             // gSound.play()
             gBoard[i][j].isShown = true
@@ -142,8 +150,7 @@ function cellClicked(i, j, elCell, ev) {
         }
         if (gBoard[i][j].minesAroundCount === 0 && !gBoard[i][j].isMine) {
             gBoard[i][j].isShown = true
-            gGame.shownCount++
-            expandShown(i, j, gBoard)
+            expandShown(i, j, gBoard)  
         }
     }
     if (ev.button === 2) {
@@ -160,13 +167,14 @@ function cellClicked(i, j, elCell, ev) {
         }
         document.querySelector('.flag').innerText = 'You have more ' + gFlagCount + ' flag'
     }
-    if (gGame.shownCount === gLevel.size ** 2 - gLevel.mines) {
+    if (gGame.shownCount === gLevel.size ** 2 - gLevel.mines && gFlagCount === 0) {
         document.querySelector('h3').innerText = 'You Win!!'
         document.querySelector('.smiley').innerText = '😎';
         clearInterval(gInterval)
         gInterval = null
         gTimer = 0.00
     }
+    console.log(gGame.shownCount);
 }
 
 function expandShown(cellI, cellJ, board) {
